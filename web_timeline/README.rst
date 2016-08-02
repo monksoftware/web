@@ -67,14 +67,14 @@ icon in the view switcher. The first time you access to it, the timeline window
 is zoomed to fit all the current elements, the same as when you perform a
 search, filter or group by operation.
 
-You can use the mouse scroll to zoom it or out in the timeline, and make click
-on any free area and drag for panning the view in that direction.
+You can use the mouse scroll to zoom in or out in the timeline, and click on
+any free area and drag for panning the view in that direction.
 
 The records of your model will be shown as rectangles whose widths are the
 duration of the event according our definition. You can select them clicking
 on this rectangle. You can also use Ctrl or Shift keys for adding discrete
 or range selections. Selected records are hightlighted with a different color
-(but the difference will be more noticeable depending on the background color.
+(but the difference will be more noticeable depending on the background color).
 Once selected, you can drag and move the selected records across the timeline.
 
 When a record is selected, a red cross button appears on the upper left corner
@@ -87,9 +87,8 @@ Dragging a record from one block to another change the corresponding field to
 the value that represents the block. You can also click on the group name to
 edit the involved record directly.
 
-Making double click on the selected record, you would be able to edit it.
-Making double click on a free area, you will create a record taking the group
-and the start date where you click as initial data.
+Double-click on the record to edit it. Double-click in open area to create a
+new record with the group and start date linked to the area you clicked in.
 
 
 .. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas

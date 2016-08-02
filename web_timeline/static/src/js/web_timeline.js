@@ -1,8 +1,7 @@
-/*---------------------------------------------------------
- * Odoo web_timeline
+/* Odoo web_timeline
  * Copyright 2015 ACSONE SA/NV
  * Copyright 2016 Pedro M. Baeza <pedro.baeza@tecnativa.com>
- *---------------------------------------------------------*/
+ * License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). */
 
 _.str.toBoolElse = function (str, elseValues, trueValues, falseValues) {
     var ret = _.str.toBool(str, trueValues, falseValues);
@@ -21,6 +20,8 @@ odoo.define('web_timeline.TimelineView', function (require) {
     var time = require('web.time');
     var View = require('web.View');
     var widgets = require('web_calendar.widgets');
+    var _ = require('_');
+    var $ = require('$');
 
     var _t = core._t;
     var _lt = core._lt;
@@ -94,11 +95,11 @@ odoo.define('web_timeline.TimelineView', function (require) {
             this.fields_view = fv;
             this.parse_colors();
             this.$timeline = this.$el.find(".oe_timeline_widget");
-            this.$el.find(".oe_timeline_button_today").click(self.on_today_clicked);
-            this.$el.find(".oe_timeline_button_scale_day").click(self.on_scale_day_clicked);
-            this.$el.find(".oe_timeline_button_scale_week").click(self.on_scale_week_clicked);
-            this.$el.find(".oe_timeline_button_scale_month").click(self.on_scale_month_clicked);
-            this.$el.find(".oe_timeline_button_scale_year").click(self.on_scale_year_clicked);
+            this.$el.find(".oe_timeline_button_today").click($.proxy(this.on_today_clicked, this));
+            this.$el.find(".oe_timeline_button_scale_day").click($.proxy(this.on_scale_day_clicked, this));
+            this.$el.find(".oe_timeline_button_scale_week").click($.proxy(this.on_scale_week_clicked, this));
+            this.$el.find(".oe_timeline_button_scale_month").click($.proxy(this.on_scale_month_clicked, this));
+            this.$el.find(".oe_timeline_button_scale_year").click($.proxy(this.on_scale_year_clicked, this));
             this.current_window = {
                   start: new moment(),
                   end : new moment().add(24, 'hours'),
@@ -114,10 +115,8 @@ odoo.define('web_timeline.TimelineView', function (require) {
             this.name = fv.name || attrs.string;
             this.view_id = fv.view_id;
 
-            //this.start = py.evaluate(attrs.start || 'None', {});
-            this.mode = attrs.mode;                 // one of month, week or day
-            this.date_start = attrs.date_start;     // Field name of starting
-                                                    // date field
+            this.mode = attrs.mode;
+            this.date_start = attrs.date_start;
             this.date_stop = attrs.date_stop;
 
             if (!isNullOrUndef(attrs.quick_create_instance)) {
@@ -162,8 +161,7 @@ odoo.define('web_timeline.TimelineView', function (require) {
                     });
                 };
 
-            var test = $.when(self.fields_get, self.get_perm('unlink'), self.get_perm('write'), self.get_perm('create'));
-            return $.when(test).then(init);
+            return $.when(self.fields_get, self.get_perm('unlink'), self.get_perm('write'), self.get_perm('create')).then(init);
         },
 
         init_timeline: function() {
@@ -188,7 +186,6 @@ odoo.define('web_timeline.TimelineView', function (require) {
                 onUpdate: self.on_update,
                 onRemove: self.on_remove,
                 orientation: 'both',
-                //start: self.start,
             };
             self.timeline = new vis.Timeline(self.$timeline.empty().get(0));
             self.timeline.setOptions(options);
@@ -356,6 +353,18 @@ odoo.define('web_timeline.TimelineView', function (require) {
             return this._super(action);
         },
 
+        create_completed: function(id) {
+            var self = this;
+            this.dataset.ids = this.dataset.ids.concat([id]);
+            this.dataset.trigger("dataset_changed", id);
+            this.dataset.read_ids([id], this.fields).done(function(records) {
+                var new_event = self.event_data_transform(records[0]);
+                var items = self.timeline.itemsData;
+                items.add(new_event);
+                self.timeline.setItems(items);
+            });
+        },
+
         on_add: function(item, callback) {
             var self = this;
             var context = this.dataset.get_context();
@@ -374,17 +383,15 @@ odoo.define('web_timeline.TimelineView', function (require) {
                 context: context,
                 view_id: +this.open_popup_action,
             }).open();
-            dialog.on('create_completed', self, function(id) {
-                self.dataset.ids = this.dataset.ids.concat([id]);
-                self.dataset.trigger("dataset_changed", id);
-                self.dataset.read_ids([id], self.fields).done(function(records) {
-                    var new_event = self.event_data_transform(records[0]);
-                    var items = self.timeline.itemsData;
-                    items.add(new_event);
-                    self.timeline.setItems(items);
-                });
-            });
+            dialog.on('create_completed', this, this.create_completed);
             return false;
+        },
+
+        write_completed: function(id) {
+            this.dataset.trigger("dataset_changed", id);
+            this.current_window = this.timeline.getWindow();
+            this.reload();
+            this.timeline.setWindow(this.current_window);
         },
 
         on_update: function(item, callback) {
@@ -408,12 +415,7 @@ odoo.define('web_timeline.TimelineView', function (require) {
                     title: title,
                     view_id: +this.open_popup_action,
                 }).open();
-                dialog.on('write_completed', self, function() {
-                    self.dataset.trigger("dataset_changed", id);
-                    self.current_window = self.timeline.getWindow();
-                    self.reload();
-                    self.timeline.setWindow(self.current_window);
-                });
+                dialog.on('write_completed', this, this.write_completed);
             }
             return false;
         },
