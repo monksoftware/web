@@ -9,7 +9,7 @@
     'author': 'ACSONE SA/NV, '
               'Tecnativa, '
               'Monk Software, ',
-              'Odoo Community Association (OCA)',
+              'Odoo Community Association (OCA)'
     "category": "web",
     "website": "http://acsone.eu",
     'depends': [
