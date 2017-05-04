@@ -6,10 +6,10 @@
     'name': "Web timeline",
     'summary': "Interactive visualization chart to show events in time",
     "version": "10.0.1.0.0",
-    'author': 'ACSONE SA/NV, '
-              'Tecnativa, '
-              'Monk Software, ',
-              'Odoo Community Association (OCA)'
+    'author': "ACSONE SA/NV, "
+              "Tecnativa, "
+              "Monk Software, "
+              "Odoo Community Association (OCA)",
     "category": "web",
     "website": "http://acsone.eu",
     'depends': [
